@@ -1,54 +1,28 @@
----
 kind: pipeline
-name: deps
+type: kubernetes
+name: default
 
 workspace:
-  base: /go
-  path: src/github.com/UKHomeOffice/policy-admission
+  path: /go/src/github.com/UKHomeOffice/policy-admission
 
 steps:
 - name: deps
-  pull: default
   image: golang:1.10.2
   commands:
   - make deps
-  when:
-    event:
-    - pull_request
-    - push
-    - tag
----
-kind: pipeline
-name: testing
 
-workspace:
-  base: /go
-  path: src/github.com/UKHomeOffice/policy-admission
-
-steps:
-- name: gobuild
+- name: test
   image: golang:1.10.2
   commands:
   - make test
 
-depends_on:
-- deps
----
-kind: pipeline
-name: building
-
-workspace:
-  base: /go
-  path: src/github.com/UKHomeOffice/policy-admission
-
-steps:
-- name: gobuild
+- name: build
   image: golang:1.10.2
   commands:
   - make static
+
 - name: package
-  pull: default
-  image: docker:17.09.0-ce
+  image: docker:dind
   commands:
   - docker build -t build .
   volumes:
@@ -59,9 +33,6 @@ steps:
     - push
     - tag
     - deployment
-
-depends_on:
-- deps
 
 services:
 - name: docker
