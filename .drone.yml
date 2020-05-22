@@ -23,11 +23,10 @@ steps:
 
 - name: package
   image: docker:dind
+  environment:
+    DOCKER_HOST: tcp://docker:2375
   commands:
   - docker build -t build .
-  volumes:
-  - name: dockersock
-    path: /var/run
   when:
     event:
     - push
@@ -37,10 +36,5 @@ steps:
 services:
 - name: docker
   image: docker:dind
-  volumes:
-  - name: dockersock
-    path: /var/run
-
-volumes:
-- name: dockersock
-  temp: {}
+  environment:
+    DOCKER_TLS_CERTDIR: ""
