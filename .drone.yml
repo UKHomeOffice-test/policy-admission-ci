@@ -33,6 +33,25 @@ steps:
     - tag
     - deployment
 
+- name: publish
+  image: plugins/ecr
+  environment:
+    AWS_REGION: eu-west-2
+  settings:
+    access_key:
+      from_secret: aws_access_key_id
+    secret_key:
+      from_secret: aws_secret_access_key
+    repo: acp/policy-admission-ci
+    registry: 670930646103.dkr.ecr.eu-west-2.amazonaws.com
+    tags:
+    - test-delete-me
+  when:
+    event:
+    - push
+    - tag
+    - deployment
+
 services:
 - name: docker
   image: docker:dind
