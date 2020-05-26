@@ -2,6 +2,9 @@ kind: pipeline
 type: kubernetes
 name: default
 
+metadata:
+  namespace: default
+
 workspace:
   path: /go/src/github.com/UKHomeOffice/policy-admission
 
