@@ -8,6 +8,14 @@ metadata:
 workspace:
   path: /go/src/github.com/UKHomeOffice/policy-admission
 
+resources:
+  request:
+    cpu: 2
+    memory: 8GiB
+  limit:
+    cpu: 4
+    memory: 10GiB
+
 steps:
 - name: deps
   image: golang:1.10.2
