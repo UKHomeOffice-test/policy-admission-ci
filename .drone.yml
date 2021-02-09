@@ -30,17 +30,27 @@ steps:
   - make static
 
 - name: package
-  image: docker:dind
+  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
   commands:
-  - docker build -t build .
+  # wait for docker service to be up before running docker build
+  - n=0; while [ "$n" -lt 60 ] && [ ! docker stats --no-stream ]; do n=$(( n + 1 )); sleep 1; done
+  - docker build -t test:$${DRONE_COMMIT_SHA} .
   when:
     event:
     - push
     - tag
     - deployment
-  volumes:
-  - name: dockersock
-    path: /var/run
+
+- name: scan-image
+  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/anchore-submission:latest
+  pull: always
+  environment:
+    IMAGE_NAME: test:${DRONE_COMMIT_SHA}
+  when:
+    event:
+    - push
+    - tag
+    - deployment
 
 - name: publish
   image: plugins/ecr
@@ -63,11 +73,10 @@ steps:
 
 services:
 - name: docker
-  image: docker:dind
-  volumes:
-  - name: dockersock
-    path: /var/run
+  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/dind
 
-volumes:
-- name: dockersock
-  temp: {}
+- name: anchore-submission-server
+  image: 340268328991.dkr.ecr.eu-west-2.amazonaws.com/acp/anchore-submission:latest
+  pull: always
+  commands:
+    - /run.sh server
