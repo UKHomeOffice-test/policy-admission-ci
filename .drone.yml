@@ -2,9 +2,6 @@ kind: pipeline
 type: kubernetes
 name: default
 
-metadata:
-  namespace: default
-
 workspace:
   path: /go/src/github.com/UKHomeOffice/policy-admission
 
@@ -34,8 +31,6 @@ steps:
 
 - name: package
   image: docker:dind
-  environment:
-    DOCKER_HOST: tcp://docker:2375
   commands:
   - docker build -t build .
   when:
@@ -43,6 +38,9 @@ steps:
     - push
     - tag
     - deployment
+  volumes:
+  - name: dockersock
+    path: /var/run
 
 - name: publish
   image: plugins/ecr
@@ -66,5 +64,10 @@ steps:
 services:
 - name: docker
   image: docker:dind
-  environment:
-    DOCKER_TLS_CERTDIR: ""
+  volumes:
+  - name: dockersock
+    path: /var/run
+
+volumes:
+- name: dockersock
+  temp: {}
